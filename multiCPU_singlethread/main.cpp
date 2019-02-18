@@ -9,9 +9,6 @@
 #include "functions.h"
 
 using namespace std;
-//declaring data types
-
-
 
 int main()
 {
