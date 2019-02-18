@@ -20,8 +20,8 @@ int main()
     //declaring parameters to acquire gray down-sampled image
     unsigned width, height;
     //file path for the two images
-    const char* fileName1 = "C:\\Users\\moham\\Desktop\\multicpu_project\\single_threaded_implemetation\\multiCPU_singlethread\\multiCPU_singlethread\\images\\im0.png";
-    const char* fileName2 = "C:\\Users\\moham\\Desktop\\multicpu_project\\single_threaded_implemetation\\multiCPU_singlethread\\multiCPU_singlethread\\images\\im1.png";
+    const char* fileName1 = "images\\im0.png";
+    const char* fileName2 = "images\\im1.png";
     vector<unsigned char> img1, img2, grayImg1, grayImg2;
     vector< vector <unsigned char> > sample1, sample2;
     //obtaining image
@@ -58,9 +58,9 @@ int main()
 	cout << "Elapsed time: " << elapsed.count() << " s\n";
 	//creating output
 	vector<unsigned char> d1, d2, d3;
-	const char* zncc1_path = "C:\\Users\\moham\\Desktop\\multicpu_project\\single_threaded_implemetation\\multiCPU_singlethread\\multiCPU_singlethread\\images\\zncc1.png";
-	const char* zncc2_path = "C:\\Users\\moham\\Desktop\\multicpu_project\\single_threaded_implemetation\\multiCPU_singlethread\\multiCPU_singlethread\\images\\zncc2.png";
-	const char* zncc3_path = "C:\\Users\\moham\\Desktop\\multicpu_project\\single_threaded_implemetation\\multiCPU_singlethread\\multiCPU_singlethread\\images\\zncc3.png";
+	const char* zncc1_path = "images\\zncc1.png";
+	const char* zncc2_path = "images\\zncc2.png";
+	const char* zncc3_path = "images\\zncc3.png";
 	//convert
 	zncc_to_one_dimension_gray(zncc1, d1);
 	zncc_to_one_dimension_gray(zncc2, d2);
