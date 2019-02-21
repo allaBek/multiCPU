@@ -13,7 +13,8 @@ void acquireImage(const char* filename, unsigned &width, unsigned &height, vecto
 void grayDownSampled(vector<unsigned char> &image, vector<unsigned char> &grayImage);
 void toDoubleDimension(vector<unsigned char> &oneDimension, vector<vector<unsigned char>> &twoDimensions);
 void getMean(vector<vector<unsigned char>>&img1, vector<vector<unsigned char>> &img2,
-	unsigned int x_bias, unsigned int y_bias, const unsigned int &B, double &mean1, double &mean2);
+	unsigned int x_bias, unsigned int y_bias, const unsigned int &B, double &mean1, double &mean2, 
+	const unsigned int HEIGHT, const unsigned int WIDTH);
 void ZNCC(vector<vector<unsigned char>>&sample1, vector<vector<unsigned char>>&sample2, vector<vector<zncc_parameters>> &zncc1, 
 	vector<vector<zncc_parameters>> &zncc2, vector<vector<zncc_parameters>> &zncc3);
 void zncc_to_one_dimension_gray(vector<vector<zncc_parameters>> &two_D, vector<unsigned char> &one_D);

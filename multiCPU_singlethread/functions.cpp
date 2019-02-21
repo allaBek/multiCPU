@@ -1,65 +1,91 @@
 #include <iostream>
-#include "lodepng.h"
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include <cmath>
-#include <fstream>
-#include <sstream>  // for string streams
 #include "functions.h"
+#include "lodepng.h"
 
 using namespace std;
-void ZNCC(vector< vector <unsigned char> >&sample1, vector< vector <unsigned char> >&sample2, vector<vector<zncc_parameters>> &zncc1, vector<vector<zncc_parameters>> &zncc2, vector<vector<zncc_parameters>> &zncc3)
+
+/*
+	This function basically calculates the ZNCC values of every raw gray-scaled image samples.
+
+	Parameters
+	- vector<vector<unsigned char>> &sample1 , The first gray-scaled image sample.
+	- vector<vector<unsigned char>> &sample2, The second gray-scaled image sample.
+	- vector<vector<zncc_parameters>> &zncc1 , Data structure to hold ZNCC values for image 2 on image 1.
+	- vector<vector<zncc_parameters>> &zncc2 , Data structure to hold ZNCC values for image 1 on image 2.
+	- vector<vector<zncc_parameters>> &zncc3 , Data structure to hold disparity map values.
+
+	Return
+	- This function does not return anything.
+*/
+void ZNCC(vector<vector<unsigned char>> &sample1, vector<vector<unsigned char>> &sample2, 
+	vector<vector<zncc_parameters>> &zncc1, vector<vector<zncc_parameters>> &zncc2, vector<vector<zncc_parameters>> &zncc3)
 {
-	cout << "zncc" << endl;
-	//declare ZNCC algorithm parameters
-	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B =9, DISP_DIFF = 60;
+	cout << "ZNCC evaluation stage has begun." << endl;
+
+	// Declaring the variables that will be used in ZNCC algorithm.
+	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B = 9, DISP_DIFF = 60;
 	double mean1, mean2;
-	for (int y =0; y < HEIGHT; y++)
+
+	// Starting the algorithm.
+	for (int y = 0; y < HEIGHT; y++)
 	{
+		// Temporary data structure to store calculations of a row of image data. 
 		vector<zncc_parameters> zncc1_temp, zncc2_temp, zncc3_temp;
-		for (int x =0; x < WIDTH; x++)
+
+		for (int x = 0; x < WIDTH; x++)
 		{
-			//zncc for image 2 on image one
+			// New ZNCC parameters object with the pixel (x,y) for image 2 on image 1
 			zncc1_temp.push_back(zncc_parameters());
 			zncc1_temp.back().x = x;
 			zncc1_temp.back().y = y;
-			//zncc for image 1 on image 2
+
+			// New ZNCC parameters object with the pixel (x,y) for image 2 on image 1
 			zncc2_temp.push_back(zncc_parameters());
 			zncc2_temp.back().x = x;
 			zncc2_temp.back().y = y;
-			//disparity map values
+
+			// New ZNCC parameters with the pixel (x,y) for disparity values.
 			zncc3_temp.push_back(zncc_parameters());
 			zncc3_temp.back().x = x;
 			zncc3_temp.back().y = y;
-			//calculate the mean
-			getMean(sample1, sample2, x, y, B, mean1, mean2);
+
+			// Calculating the mean for both images for pixel (x,y) using window size B.
+			getMean(sample1, sample2, x, y, B, mean1, mean2, HEIGHT, WIDTH);
+
+			// Calculate the ZNCC values.
 			for (int d = 0; d < MAX_DISP; d++)
 			{
-				//calculate the ZNCC
+				// Initialize the necessary variables.
 				const int H = ((B - 1) / 2);
 				double zncc1_sum1 = 0, zncc1_sum2 = 0, zncc1_sum3 = 0;
 				double zncc2_sum1 = 0, zncc2_sum2 = 0, zncc2_sum3 = 0;
+
+				// Only taking the pixels inside the window frame sized B and in the picture.
 				for (int y_w = y - H; y_w <= (y + H) && (y+H) < WIDTH; y_w++)
 				{
 					for (int x_w = x - H; x_w <= x + H; x_w++)
 					{
 						if (x_w > -1 && y_w > -1 && y_w < HEIGHT)
 						{
-							//cout << (x_w) << "		" << d << "		" << (x_w - d)<< endl;
+							// ZNCC sum equations for image 2 on image 1.
 							if ((x_w - d) > -1 && (x_w - d) < WIDTH)
 							{
-								//zncc sum equations
-								//img2 on img1
 								unsigned char s1 = sample1[y_w][x_w], s2 = sample2[y_w][x_w - d];
+
 								zncc1_sum1 = zncc1_sum1 + (s1 - mean1)*(s2 - mean2);
 								zncc1_sum2 = zncc1_sum2 + (s1 - mean1) *(s1 - mean1);
-								zncc1_sum3 = zncc1_sum3 + (s2 - mean2) *(s2 - mean2);
-														
+								zncc1_sum3 = zncc1_sum3 + (s2 - mean2) *(s2 - mean2);						
 							}
+
+							// ZNCC sum equations for image 1 on image 2.
 							if (x_w + d < WIDTH)
 							{
-								unsigned char s1, s2;
-								s2 = sample2[y_w][x_w ]; s1 = sample1[y_w][x_w + d];
-								//img1 on img2
+								unsigned char s1 = sample1[y_w][x_w + d], s2 = sample2[y_w][x_w];
+
 								zncc2_sum1 = zncc2_sum1 + (s2 - mean2)*(s1 - mean1);
 								zncc2_sum2 = zncc2_sum2 + (s2 - mean2) *(s2 - mean2);
 								zncc2_sum3 = zncc2_sum3 + (s1 - mean1) *(s1 - mean1);
@@ -68,38 +94,94 @@ void ZNCC(vector< vector <unsigned char> >&sample1, vector< vector <unsigned cha
 						}
 					}
 				}
-				//finding final zncc value for case 1
+
+				// Finding the final ZNCC value for the first case by evaluating the values described in the algorithm.
 				zncc1_sum2 = sqrt(zncc1_sum2);
 				zncc1_sum3 = sqrt(zncc1_sum3);
-				double temp = zncc1_sum1 / (zncc1_sum2*zncc1_sum3);
-				if (zncc1_temp.back().zncc <= temp)
-				{
-					zncc1_temp.back().zncc = temp;
-					zncc1_temp.back().disparity = (unsigned char) (d * 255 / MAX_DISP);
-				}
-				//finding final zncc value for case 2
+				double final1 = zncc1_sum1 / (zncc1_sum2 * zncc1_sum3);
+
+				// Finding the final ZNCC value for the second case by evaluating the values described in the algorithm.
 				zncc2_sum2 = sqrt(zncc2_sum2);
 				zncc2_sum3 = sqrt(zncc2_sum3);
-				temp = zncc2_sum1 / (zncc2_sum2*zncc2_sum3);
-				if (zncc2_temp.back().zncc <= temp)
+				double final2 = zncc2_sum1 / (zncc2_sum2 * zncc2_sum3);
+
+				// Executing the algorithm's last step.
+				if (zncc1_temp.back().zncc <= final1)
 				{
-					zncc2_temp.back().zncc = temp;
-					zncc2_temp.back().disparity = (unsigned char) (d * 255 / 65);
+					zncc1_temp.back().zncc = final1;
+					zncc1_temp.back().disparity = (unsigned char) (d * 255 / MAX_DISP);
 				}
 
-
-
+				if (zncc2_temp.back().zncc <= final2)
+				{
+					zncc2_temp.back().zncc = final2;
+					zncc2_temp.back().disparity = (unsigned char) (d * 255 / 65);
+				}
 			}
+
+			// If the disparity difference is inside the threshold, taking it into the disparity map.
 			if (abs(zncc1_temp.back().disparity - zncc2_temp.back().disparity) < DISP_DIFF)
-				zncc3_temp.back().disparity = zncc1_temp.back().disparity>zncc2_temp.back().disparity?zncc2_temp.back().disparity: zncc1_temp.back().disparity;
+				zncc3_temp.back().disparity = zncc1_temp.back().disparity>zncc2_temp.back().disparity ? zncc2_temp.back().disparity : zncc1_temp.back().disparity;
 			else
 				zncc3_temp.back().disparity = 0;
-
 		}
+
+		// Pushing values into the storing data structures.
 		zncc1.push_back(zncc1_temp);
 		zncc2.push_back(zncc2_temp);
 		zncc3.push_back(zncc3_temp);
+	}
+}
+
+/*
+	This function is basically used in calculating mean values in a defined window frame of pixels.
+
+	Parameters
+	- vector<vector<unsigned char>>&img1 , The first gray-scaled image sample.
+	- vector<vector<unsigned char>> &img2, The second gray-scaled image sample.
+	- unsigned int x_bias , x-axis pixel coordinate.
+	- unsigned int y_bias , y-axis pixel coordinate.
+	- const unsigned int &B , Window frame size.
+	- double &mean1 , The first mean value to return evaluated using img1.
+	- double &mean2 , The second mean value to return evaluated using img2.
+	- const unsigned int HEIGHT , The hight of the images.
+	- const unsigned int WIDTH , The width of the images.
+
+	Return
+	- This function does not return anything.
+*/
+void getMean(vector<vector<unsigned char>>&img1, vector<vector<unsigned char>> &img2,
+	unsigned int x_bias, unsigned int y_bias, const unsigned int &B, double &mean1, double &mean2, 
+	const unsigned int HEIGHT, const unsigned int WIDTH)
+{
+	// Initializing mean values with default value zero in case of it wouldn't be in frame.
+	mean1 = 0; mean2 = 0;
+
+	// Initializing axis limits and counter with default value zero.
+	int lim_x = 0, lim_y = 0, counter = 0;
+
+	// Evaluating the limits for the beginning of the axis
+	lim_y = (y_bias > ((B - 1) / 2)) ? ((B - 1) / 2) : y_bias;
+	lim_x = (x_bias > ((B - 1) / 2)) ? ((B - 1) / 2) : x_bias;
+
+	// Calculating the both means inside the window frame.
+	for (int x = x_bias - lim_x; (x <= (x_bias + lim_x)) && (x < HEIGHT); x++)
+	{
+		for (int y = y_bias - lim_y; (y <= (y_bias + lim_y)) && (y < WIDTH); y++)
+		{
+			mean1 = mean1 + (unsigned char)img1[x][y];
+			mean2 = mean2 + (unsigned char)img2[x][y];
+
+			// Counter value will be used in determining how many pixels are inside of the frame.
+			counter++;
 		}
+	}
+
+	// Returning the average.
+	if (counter != 0) {
+		mean1 /= counter;
+		mean2 /= counter;
+	}
 }
 
 void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
@@ -236,34 +318,6 @@ void toDoubleDimension(vector <unsigned char> &oneDimension, vector< vector <uns
 		twoDimensions.push_back(temp);
 		temp.erase(temp.begin(), temp.end());
 	}
-
-}
-
-void getMean(vector< vector <unsigned char> >&img1, vector< vector <unsigned char> >&img2,
-	unsigned int x_bias, unsigned int y_bias, const unsigned int &B, double &mean1, double &mean2)
-{
-
-	mean1 = 0;
-	mean2 = 0;
-	int lim_x = 0, lim_y = 0, counter = 0;
-	const unsigned int HEIGHT = img1.size(), WIDTH = img1[0].size();
-	//limits for the beginning of the axis
-	lim_y = (y_bias > ((B - 1) / 2)) ? ((B - 1) / 2) : y_bias;
-	lim_x = (x_bias > ((B - 1) / 2)) ? ((B - 1) / 2) : x_bias;
-	for (int x = x_bias - lim_x; (x <= (x_bias + lim_x)) && (x < HEIGHT); x++)
-	{
-		for (int y = y_bias - lim_y; (y <= (y_bias + lim_y)) && (y < WIDTH); y++)
-		{
-			mean1 = mean1 + (unsigned char)img1[x][y];
-			mean2 = mean2 + (unsigned char)img2[x][y];
-			counter++;
-
-		}
-	}
-	if (counter == 0)
-		counter = 1;
-	mean1 = mean1 / counter;
-	mean2 = mean2 / counter;
 
 }
 void zncc_to_one_dimension_gray(vector<vector<zncc_parameters>> &two_D, vector<unsigned char> &one_D)
