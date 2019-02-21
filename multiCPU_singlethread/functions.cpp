@@ -11,7 +11,7 @@ void ZNCC(vector< vector <unsigned char> >&sample1, vector< vector <unsigned cha
 {
 	cout << "zncc" << endl;
 	//declare ZNCC algorithm parameters
-	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B = 9, DISP_DIFF = 31;
+	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B =9, DISP_DIFF = 60;
 	double mean1, mean2;
 	for (int y =0; y < HEIGHT; y++)
 	{
@@ -99,7 +99,7 @@ void ZNCC(vector< vector <unsigned char> >&sample1, vector< vector <unsigned cha
 		zncc1.push_back(zncc1_temp);
 		zncc2.push_back(zncc2_temp);
 		zncc3.push_back(zncc3_temp);
-	}
+		}
 }
 
 void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
@@ -187,7 +187,7 @@ void two_maps_to_one(vector<vector<zncc_parameters>> &znccX, vector<vector<zncc_
 		{
 			int temp1 = znccX[i][j].disparity < znccY[i][j].disparity ? znccY[i][j].disparity : znccX[i][j].disparity;
 			int temp2 = znccX[i][j].disparity > znccY[i][j].disparity ? znccY[i][j].disparity : znccX[i][j].disparity;
-			znccX[i][j].disparity = int(temp1 / 3 + temp2 * 2 / 3);
+			znccX[i][j].disparity = int(temp2 / 3 + temp1 * 2 / 3);
 		}
 	}
 }

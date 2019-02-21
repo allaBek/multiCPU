@@ -19,7 +19,7 @@ int main()
 	auto start = chrono::high_resolution_clock::now();
 
 	// Data structures to store raw and processed image data.
-	vector<unsigned char> img1, img2, grayImg1, grayImg2, out1, out2, out3;
+	vector<unsigned char> img1, img2, grayImg1, grayImg2, out1, out2, out3, out4, out5;
 	vector<vector<unsigned char>> sample1, sample2;
 
     // Declaring parameters to acquire size of images.
@@ -53,38 +53,49 @@ int main()
 	grayImg2.clear(); grayImg2.shrink_to_fit();
 
 	// Decleration of data structure to process ZNCC algorithm.
-	vector<vector<zncc_parameters>> zncc1, zncc2, zncc3, zncc3_copy;
+	vector<vector<zncc_parameters>> zncc1, zncc2, zncc3, zncc3_x_filling, zncc3_y_filling, zncc3_x_filling_copy;
 
 	// Processing the ZNCC algorithm.
     ZNCC(sample1, sample2, zncc1, zncc2, zncc3);
-	copyVector(zncc3, zncc3_copy);
+	
+	//creatinga  copy of vector zncc3, just for size template
+	copyVector(zncc3, zncc3_x_filling);
+	copyVector(zncc3, zncc3_y_filling);
+	copyVector(zncc3, zncc3_x_filling_copy);
 
 	// Clearing unnecessory vectors to free up memory.
 	sample1.clear(); sample1.shrink_to_fit();
 	sample2.clear(); sample2.shrink_to_fit();
 
 	// Post-processing on data using two different methods.
-	occlusion_filling_x(zncc3);
-	occlusion_filling_y(zncc3_copy);
+	occlusion_filling_x(zncc3_x_filling);
+	occlusion_filling_y(zncc3_y_filling);
+	//creatinga  copy of zncc3_x_filling to keep it for later in ouputing images
 
 	// Uniting two results into one to reach final conclusion.
-	two_maps_to_one(zncc3, zncc3_copy);
+	two_maps_to_one(zncc3_x_filling_copy, zncc3_y_filling);
 
 	// Conversion back from ZNCC structure to one-dimensional vector form.
 	zncc_to_one_dimension_gray(zncc1, out1);
 	zncc_to_one_dimension_gray(zncc2, out2);
-	zncc_to_one_dimension_gray(zncc3, out3);
+	zncc_to_one_dimension_gray(zncc3_x_filling, out3);
+	zncc_to_one_dimension_gray(zncc3_y_filling, out4);
+	zncc_to_one_dimension_gray(zncc3_x_filling_copy, out5);
 
 	// Clearing unnecessory vectors to free up memory.
 	zncc1.clear(); zncc1.shrink_to_fit();
 	zncc2.clear(); zncc2.shrink_to_fit();
 	zncc3.clear(); zncc3.shrink_to_fit();
-	zncc3_copy.clear(); zncc3_copy.shrink_to_fit();
+	zncc3_x_filling.clear(); zncc3_x_filling.shrink_to_fit();
+	zncc3_y_filling.clear(); zncc3_y_filling.shrink_to_fit();
+	zncc3_x_filling_copy.clear(); zncc3_x_filling_copy.shrink_to_fit();
 
 	// Obtaining the .png image using the 1D vectors.
-	lodepng::encode(zncc1_path, out1, width * 4, height);
-	lodepng::encode(zncc2_path, out2, width * 4, height);
-	lodepng::encode(zncc3_path, out3, width * 4, height);
+	lodepng::encode(".\\images\\first_disparity_map.png", out1, width / 4, height/4);
+	lodepng::encode(".\\images\\second_disparity_map.png", out2, width /4, height/4);
+	lodepng::encode(".\\images\\X_occlusion_filling.png", out3, width /4, height/4);
+	lodepng::encode(".\\images\\Y_occlusion_filling.png", out4, width / 4, height / 4);
+	lodepng::encode(".\\images\\X_Y_occlusion_filling.png", out5, width / 4, height / 4);
 
 	// Clearing unnecessory vectors to free up memory.
 	out1.clear(); out1.shrink_to_fit();
