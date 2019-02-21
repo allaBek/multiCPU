@@ -11,7 +11,7 @@ void ZNCC(vector< vector <unsigned char> >&sample1, vector< vector <unsigned cha
 {
 	cout << "zncc" << endl;
 	//declare ZNCC algorithm parameters
-	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B = 9, DISP_DIFF = 32;
+	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B = 9, DISP_DIFF = 31;
 	double mean1, mean2;
 	for (int y =0; y < HEIGHT; y++)
 	{
@@ -104,7 +104,7 @@ void ZNCC(vector< vector <unsigned char> >&sample1, vector< vector <unsigned cha
 
 void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 {
-	cout << "Occlusion filling through x";
+	cout << "Occlusion filling through x"<<endl;
 	for (int i = 0; i < zncc.size(); i++)
 	{
 		for (int j = 0; j < zncc[0].size(); j++)
@@ -142,7 +142,7 @@ void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 
 void occlusion_filling_y(vector<vector<zncc_parameters>> &zncc)
 {
-	cout << "Occlusion filling through y";
+	cout << "Occlusion filling through y"<<endl;
 	for (int i = 0; i < zncc.size(); i++)
 	{
 		for (int j = 0; j < zncc[0].size(); j++)

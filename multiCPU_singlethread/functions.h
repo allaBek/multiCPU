@@ -1,5 +1,4 @@
 #pragma once
- // for string streams
 using namespace std;
 //declare structure to hold data
 struct zncc_parameters {
