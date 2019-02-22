@@ -27,7 +27,7 @@ void ZNCC(vector<vector<unsigned char>> &sample1, vector<vector<unsigned char>> 
 	cout << "ZNCC evaluation stage has begun." << endl;
 
 	// Declaring the variables that will be used in ZNCC algorithm.
-	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B = 100, DISP_DIFF = 60;
+	const int HEIGHT = sample1.size(), WIDTH = sample1[0].size(), MAX_DISP = 65, B = 9, DISP_DIFF = 60;
 	double mean1, mean2;
 
 	// Starting the algorithm.

@@ -22,6 +22,7 @@
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="parallel_functions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="functions.h" />
