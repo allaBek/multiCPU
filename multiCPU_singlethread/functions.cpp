@@ -199,15 +199,19 @@ void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 
 	// Defining constant variables to traverse inside the ZNCC vector.
 	const int ZNCC_size = zncc.size(), ZNCC_sizeInner = zncc[0].size();
-
+	
+	// Traversing inside the ZNCC values vector.
 	for (int i = 0; i < ZNCC_size; i++)
 	{
 		for (int j = 0; j < ZNCC_sizeInner; j++)
 		{
+			// If there are pixels have zero disparity, take the pixel into process.
 			if (zncc[i][j].disparity == 0)
 			{
+				// METHOD : Look for the closest pixel that have non-zero disparity and mimic the disparity of it.
 				for (int k = 0; true && (k < zncc[0].size()); k++)
 				{
+					// On the right side in the same x-axis.
 					if ((j + k) < zncc[0].size())
 					{
 						if (zncc[i][j + k].disparity != 0)
@@ -215,8 +219,9 @@ void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 							zncc[i][j].disparity = zncc[i][j + k].disparity;
 							break;
 						}
-
 					}
+
+					// On the left side in the same x-axis.
 					else if ((j - k) > 0)
 					{
 						if (zncc[i][j - k].disparity != 0)
@@ -225,11 +230,8 @@ void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 							break;
 						}
 					}
-
-
 				}
 			}
-
 		}
 	}
 }
@@ -250,14 +252,18 @@ void occlusion_filling_y(vector<vector<zncc_parameters>> &zncc)
 	// Defining constant variables to traverse inside the ZNCC vector.
 	const int ZNCC_size = zncc.size(), ZNCC_sizeInner = zncc[0].size();
 
+	// Traversing inside the ZNCC values vector.
 	for (int i = 0; i < ZNCC_size; i++)
 	{
 		for (int j = 0; j < ZNCC_sizeInner; j++)
 		{
+			// If there are pixels have zero disparity, take the pixel into process.
 			if (zncc[i][j].disparity == 0)
 			{
+				// METHOD : Look for the closest pixel that have non-zero disparity and mimic the disparity of it.
 				for (int k = 0; true && (k < zncc.size()); k++)
 				{
+					// On the downside in the same y-axis.
 					if ((i + k) < zncc.size())
 					{
 						if (zncc[i+k][j].disparity != 0)
@@ -266,6 +272,8 @@ void occlusion_filling_y(vector<vector<zncc_parameters>> &zncc)
 							break;
 						}
 					}
+
+					// On the upside in the same y-axis.
 					else if ((i - k) > 0)
 					{
 						if (zncc[i-k][j].disparity != 0)
