@@ -10,8 +10,8 @@ struct zncc_parameters {
 
 // Function signatures
 void acquireImage(const char* filename, unsigned &width, unsigned &height, vector<unsigned char> &image);
-void grayDownSampled(vector<unsigned char> &image, vector<unsigned char> &grayImage);
-void toDoubleDimension(vector<unsigned char> &oneDimension, vector<vector<unsigned char>> &twoDimensions);
+void grayDownSampled(vector<unsigned char> &image, vector<unsigned char> &grayImage, unsigned int HEIGHT, unsigned int WIDTH);
+void toDoubleDimension(vector<unsigned char> &oneDimension, vector<vector<unsigned char>> &twoDimensions, unsigned int HEIGHT, unsigned int WIDTH);
 void getMean(vector<vector<unsigned char>>&img1, vector<vector<unsigned char>> &img2,
 	unsigned int x_bias, unsigned int y_bias, const unsigned int &B, double &mean1, double &mean2, 
 	const unsigned int HEIGHT, const unsigned int WIDTH);

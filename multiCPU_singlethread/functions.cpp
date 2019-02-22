@@ -137,7 +137,7 @@ void ZNCC(vector<vector<unsigned char>> &sample1, vector<vector<unsigned char>> 
 	This function is basically used in calculating mean values in a defined window frame of pixels.
 
 	Parameters
-	- vector<vector<unsigned char>>&img1 , The first gray-scaled image sample.
+	- vector<vector<unsigned char>> &img1 , The first gray-scaled image sample.
 	- vector<vector<unsigned char>> &img2, The second gray-scaled image sample.
 	- unsigned int x_bias , x-axis pixel coordinate.
 	- unsigned int y_bias , y-axis pixel coordinate.
@@ -150,7 +150,7 @@ void ZNCC(vector<vector<unsigned char>> &sample1, vector<vector<unsigned char>> 
 	Return
 	- This function does not return anything.
 */
-void getMean(vector<vector<unsigned char>>&img1, vector<vector<unsigned char>> &img2,
+void getMean(vector<vector<unsigned char>> &img1, vector<vector<unsigned char>> &img2,
 	unsigned int x_bias, unsigned int y_bias, const unsigned int &B, double &mean1, double &mean2, 
 	const unsigned int HEIGHT, const unsigned int WIDTH)
 {
@@ -184,12 +184,25 @@ void getMean(vector<vector<unsigned char>>&img1, vector<vector<unsigned char>> &
 	}
 }
 
+/*
+	This function does occlusion-filling through the x-axis.
+
+	Parameters
+	- vector<vector<zncc_parameters>> &zncc , The processed and evaulated ZNCC values.
+
+	Return
+	- This function does not return anything.
+*/
 void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 {
-	cout << "Occlusion filling through x"<<endl;
-	for (int i = 0; i < zncc.size(); i++)
+	cout << "Occlusion filling through x-axis has begun." << endl;
+
+	// Defining constant variables to traverse inside the ZNCC vector.
+	const int ZNCC_size = zncc.size(), ZNCC_sizeInner = zncc[0].size();
+
+	for (int i = 0; i < ZNCC_size; i++)
 	{
-		for (int j = 0; j < zncc[0].size(); j++)
+		for (int j = 0; j < ZNCC_sizeInner; j++)
 		{
 			if (zncc[i][j].disparity == 0)
 			{
@@ -221,13 +234,25 @@ void occlusion_filling_x(vector<vector<zncc_parameters>> &zncc)
 	}
 }
 
+/*
+	This function does occlusion-filling through the y-axis.
 
+	Parameters
+	- vector<vector<zncc_parameters>> &zncc , The processed and evaluated ZNCC values.
+
+	Return
+	- This function does not return anything.
+*/
 void occlusion_filling_y(vector<vector<zncc_parameters>> &zncc)
 {
-	cout << "Occlusion filling through y"<<endl;
-	for (int i = 0; i < zncc.size(); i++)
+	cout << "Occlusion filling through y has begun. " << endl;
+
+	// Defining constant variables to traverse inside the ZNCC vector.
+	const int ZNCC_size = zncc.size(), ZNCC_sizeInner = zncc[0].size();
+
+	for (int i = 0; i < ZNCC_size; i++)
 	{
-		for (int j = 0; j < zncc[0].size(); j++)
+		for (int j = 0; j < ZNCC_sizeInner; j++)
 		{
 			if (zncc[i][j].disparity == 0)
 			{
@@ -240,7 +265,6 @@ void occlusion_filling_y(vector<vector<zncc_parameters>> &zncc)
 							zncc[i][j].disparity = zncc[i+k][j].disparity;
 							break;
 						}
-
 					}
 					else if ((i - k) > 0)
 					{
@@ -250,23 +274,31 @@ void occlusion_filling_y(vector<vector<zncc_parameters>> &zncc)
 							break;
 						}
 					}
-
-
 				}
 			}
-
 		}
 	}
 }
 
+/*
+	This function takes two ZNCC occlusion-filled processed vectors and concatenates them into one.
 
+	Parameters
+	- vector<vector<zncc_parameters>> &znccX , The vector filled with occlusion-filling through x-axis.
+	- vector<vector<zncc_parameters>> &znccY , The vector filled with occlusion-filling through y-axis.
+
+	Return
+	- This function does not return anything.
+*/
 void two_maps_to_one(vector<vector<zncc_parameters>> &znccX, vector<vector<zncc_parameters>> &znccY)
 {
-	cout << "Merging two images";
+	cout << "Merging two images at the end." << endl;
+
 	for (int i = 0; i < znccX.size(); i++)
 	{
 		for (int j = 0; j < znccX[0].size(); j++)
 		{
+			// METHOD : Take 2/3 of bigger disparity value and 1/3 of smaller disparity value, then sum it into one disparity value.
 			int temp1 = znccX[i][j].disparity < znccY[i][j].disparity ? znccY[i][j].disparity : znccX[i][j].disparity;
 			int temp2 = znccX[i][j].disparity > znccY[i][j].disparity ? znccY[i][j].disparity : znccX[i][j].disparity;
 			znccX[i][j].disparity = int(temp2 / 3 + temp1 * 2 / 3);
@@ -274,76 +306,134 @@ void two_maps_to_one(vector<vector<zncc_parameters>> &znccX, vector<vector<zncc_
 	}
 }
 
+/*
+	This function takes the file name of the image and decodes it into a target vector. If there is an error, displays it.
 
+	Parameters
+	- const char* filename , The filename of the image.
+	- unsigned &width , The width size which will be retrieved in decoding process.
+	- unsigned &height , The height size which will be retrieved in decoding process.
+	- vector<unsigned char> &image , The raw image data will be placed in this vector.
 
-//Decode from disk to raw pixels with a single function call
+	Return
+	- This function does not return anything.
+*/
 void acquireImage(const char* filename, unsigned &width, unsigned &height, vector<unsigned char> &image)
 {
-	//the raw pixels
-	//decode
 	unsigned error = lodepng::decode(image, width, height, filename);
-	//if there's an error, display it
+	if (error) {
+		cout << "There was an error in decoding the image into raw data : " << error << endl;
+	}
 }
 
-void grayDownSampled(vector <unsigned char> &image, vector <unsigned char> &grayImage)
+/*
+	This function takes the raw image data and makes it gray-scaled while downsizing it in scale of 1/16
+
+	Parameters
+	- vector<unsigned char> &image , Base image.
+	- vector<unsigned char> &grayImage , Gray-scaled image downsized at a factor of 1/16.
+
+	Return
+	- This function does not return anything.
+*/
+void grayDownSampled(vector<unsigned char> &image, vector<unsigned char> &grayImage, unsigned int HEIGHT, unsigned int WIDTH)
 {
-	//downsampling images by a factor of 1/16
-	int j = 0;
-	int k = 0;
-	for (int j = 0; j < 2016; j += 4)
+	// Traversing every R, G, B and A values of every pixel.
+	for (int j = 0; j < HEIGHT; j += 4)
 	{
-		for (int i = 11760 * j; i < image.size(); i = i + 16)
+		for (int i = WIDTH * 4 * j; i < image.size(); i = i + 16)
 		{
-			if (i == 11760 * (j + 1))
-			{
+			if (i == WIDTH * 4 * (j + 1))
 				break;
-			}
+
 			unsigned char gray = (unsigned char)(0.2126*image[i] + 0.7152*image[i + 1] + 0.0722*image[i + 2]);
 			grayImage.push_back(gray);
 		}
 	}
 }
-void toDoubleDimension(vector <unsigned char> &oneDimension, vector< vector <unsigned char> >&twoDimensions)
+
+/*
+	This function transforms one-dimensional vectors into two-dimensional ones.
+
+	Parameters
+	- vector<unsigned char> &oneDimension , Base vector.
+	- vector<vector<unsigned char>> &twoDimensions , Target vector.
+	- unsigned int HEIGHT , The height of the 2D vector.
+	- unsigned int WIDTH , The width of the 2D vector.
+
+	Return
+	- This function does not return anything.
+*/
+void toDoubleDimension(vector<unsigned char> &oneDimension, vector<vector<unsigned char>> &twoDimensions, unsigned int HEIGHT, unsigned int WIDTH)
 {
+	// Declaring the holder structure.
 	vector <unsigned char> temp;
 
-	for (int i = 0; i < 504; i++)
+	// Doing the transformation...
+	for (int i = 0; i < HEIGHT; i++)
 	{
-		for (int j = 0; j < 735; j++)
+		for (int j = 0; j < WIDTH; j++)
 		{
-			if (j + i * 735 < oneDimension.size())
-				temp.push_back(oneDimension[j + i * 735]);
-
+			if (j + i * WIDTH < oneDimension.size())
+				temp.push_back(oneDimension[j + i * WIDTH]);
 		}
+
 		twoDimensions.push_back(temp);
 		temp.erase(temp.begin(), temp.end());
 	}
-
 }
+
+/*
+	This function transforms two-dimensional ZNCC vectors into one-dimensional ones.
+
+	Parameters
+	- vector<vector<zncc_parameters>> &two_D , Base vector
+	- vector<unsigned char> &one_D , Target vector
+
+	Return
+	- This function does not return anything.
+*/
 void zncc_to_one_dimension_gray(vector<vector<zncc_parameters>> &two_D, vector<unsigned char> &one_D)
 {
+	// Defining constant size variables in order traverse inside of the vector.
 	const int I = two_D.size(), J = two_D[0].size();
+
+	// Doing the transformation...
 	for (int i = 0; i < I; i++)
 	{
 		for (int j = 0; j < J; j++)
 		{
-			for (int k = 0; k < 3; k++)
-				one_D.push_back(two_D[i][j].disparity);
+			// Disparity for the RGB values and adding the opacity.
+			one_D.push_back(two_D[i][j].disparity);
+			one_D.push_back(two_D[i][j].disparity);
+			one_D.push_back(two_D[i][j].disparity);
 			one_D.push_back((unsigned char) 255);
 		}
 	}
 }
 
+/*
+	This function deep copies a given vector to a target vector.
+
+	Parameters
+	- vector<vector<zncc_parameters>> &zncc1 , Base vector
+	- vector<vector<zncc_parameters>> &zncc2 , Target vector
+
+	Return
+	- This function does not return anything.
+*/
 void copyVector(vector<vector<zncc_parameters>> &zncc1, vector<vector<zncc_parameters>> &zncc2)
 {
+	// Defining constant size variables in order traverse inside of the vector.
 	const int I = zncc1.size(), J = zncc1[0].size();
+
+	// Doing the copy...
 	for (int i = 0; i < I; i++)
 	{
 		vector<zncc_parameters> temp;
 		for (int j = 0; j < J; j++)
-		{
 			temp.push_back(zncc1[i][j]);
-		}
+
 		zncc2.push_back(temp);
 	}
 }
