@@ -1,3 +1,10 @@
+/*
+Authors : Mohamed Bekoucha & Berke Esmer
+For the course, 521288S Multiprogramming Project
+
+University of Oulu, Spring 2019
+*/
+
 #include <iostream>
 #include <fstream>
 #include <sstream> 

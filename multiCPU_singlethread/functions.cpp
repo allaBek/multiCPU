@@ -36,6 +36,7 @@ void ZNCC(vector<vector<unsigned char>> &sample1, vector<vector<unsigned char>> 
 		// Temporary data structure to store calculations of a row of image data. 
 		vector<zncc_parameters> zncc1_temp, zncc2_temp, zncc3_temp;
 
+		// Creating template objects.
 		for (int x = 0; x < WIDTH; x++)
 		{
 			// New ZNCC parameters object with the pixel (x,y) for image 2 on image 1
@@ -90,7 +91,6 @@ void ZNCC(vector<vector<unsigned char>> &sample1, vector<vector<unsigned char>> 
 								zncc2_sum2 = zncc2_sum2 + (s2 - mean2) *(s2 - mean2);
 								zncc2_sum3 = zncc2_sum3 + (s1 - mean1) *(s1 - mean1);
 							}
-							
 						}
 					}
 				}
