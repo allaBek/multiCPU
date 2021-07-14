@@ -7,7 +7,7 @@
 #include "lodepng.h"
 
 using namespace std;
-
+//playing with some files, no import changes
 /*
 	This function basically calculates the ZNCC values of every raw gray-scaled image samples.
 
