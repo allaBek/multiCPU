@@ -8,6 +8,7 @@ struct zncc_parameters {
 	double zncc = -10; // The ZNCC value, initialized as -10.
 };
 
+//Again, meaningless comment
 // Function signatures
 void toDoubleDimension(vector<unsigned char> &oneDimension, vector<vector<unsigned char>> &twoDimensions, unsigned int HEIGHT, unsigned int WIDTH);
 void grayDownSampled(vector<unsigned char> &image, vector<unsigned char> &grayImage, unsigned int HEIGHT, unsigned int WIDTH);
